@@ -1,0 +1,25 @@
+.bg {
+  background: url('../img/bg.jpg') no-repeat center center;
+  background-size: cover;
+  height: 100vh;
+}
+
+.bg-white {
+  background: #f3f9f7;
+}
+
+.box-shadow {
+  box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.start-window {
+  margin-top: 15%;
+}
+
+.pigeon {
+  position: absolute;
+  bottom: 60px;
+}
+.pigeon img {
+  width: 60px;
+}

@@ -9,6 +9,12 @@ public class JSBridge {
         this.webEngine = webEngine;
     }
 
+    public boolean printHelloWorld(){
+    	System.out.println("Hello World!");
+    	webEngine.executeScript("HelloWorld()");
+    	return true;
+    }
+    
     public boolean checkSolution(String solve) {
         if (solve.equalsIgnoreCase("god")) {
             webEngine.executeScript("document.getElementById(\"out\").classList.add(\"enabled\");");
