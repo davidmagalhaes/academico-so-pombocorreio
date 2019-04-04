@@ -23,18 +23,21 @@ public class PomboCorreio extends Thread {
 				mudarEstado(EstadoPomboCorreio.CARREGANDO);
 				sleep(tempoCarga);
 				
-				mudarEstado(EstadoPomboCorreio.VOANDO);
+				mudarEstado(EstadoPomboCorreio.VOANDO_IDA);
 				sleep(tempoVoo);
 				
 				mudarEstado(EstadoPomboCorreio.DESCARREGANDO);
 				sleep(tempoDescarga);
 				
-				mudarEstado(EstadoPomboCorreio.VOANDO);
+				mudarEstado(EstadoPomboCorreio.VOANDO_VOLTA);
 				sleep(tempoVoo);
 			}
 		}
 		catch (InterruptedException ie) {
 			ie.printStackTrace();
+		}
+		finally {
+			mudarEstado(EstadoPomboCorreio.MORTO);
 		}
 	}
 	

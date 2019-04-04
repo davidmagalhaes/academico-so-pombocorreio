@@ -1,5 +1,6 @@
 package com.master.engcomp.so;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.master.engcomp.so.proj.CaixaMensagens;
@@ -17,7 +18,7 @@ public class JSBridge {
 	private WebEngine webEngine;
 
 	private CaixaMensagens caixaMensagens;
-	private List<Usuario> usuarios;
+	private List<Usuario> usuarios = new ArrayList<>();
 	private PomboCorreio pomboCorreio;
 	
 	private boolean iniciado = false;
@@ -27,12 +28,20 @@ public class JSBridge {
     }
 
     public long criarPombo(int numeroMensagens, int tempoCarga, int tempoVoo, int tempoDescarga) {
+    	if(pomboCorreio != null && pomboCorreio.isAlive()) {
+    		pomboCorreio.interrupt();
+    	}
+    	
     	pomboCorreio = new PomboCorreio();
     	
     	pomboCorreio.setTempoCarga(tempoCarga);
     	pomboCorreio.setTempoDescarga(tempoDescarga);
     	pomboCorreio.setTempoVoo(tempoVoo);
     	pomboCorreio.setNumeroMensagens(numeroMensagens);
+    	
+    	if(iniciado) {
+    		pomboCorreio.start();
+    	}
     	
     	return pomboCorreio.getId();
     }
@@ -57,12 +66,12 @@ public class JSBridge {
     	caixaMensagens.addCaixaMensagensListener(new CaixaMensagensListener() {
 			@Override
 			public void mensagensConsumidas(int numeroMensagens) {
-				webEngine.executeScript(String.format("updateCaixaMensagens(-%d)", numeroMensagens));
+				webEngine.executeScript(String.format("updateCaixaMensagens(%d)", caixaMensagens.getNumeroMensagens()));
 			}
 			
 			@Override
 			public void mensagemInserida() {
-				webEngine.executeScript("updateCaixaMensagens(1)");
+				webEngine.executeScript(String.format("updateCaixaMensagens(%d)", caixaMensagens.getNumeroMensagens()));
 			}
 		});
     	
@@ -80,7 +89,7 @@ public class JSBridge {
     		usuario.addUsuarioListener(new UsuarioListener() {
 				@Override
 				public void mudancaEstado(Usuario usuario, EstadoUsuario novoEstadoUsuario) {
-					webEngine.executeScript(String.format("mudancaEstadoPomboCorreio(%l, %d)", 
+					webEngine.executeScript(String.format("mudancaEstadoUsuario(%l, %d)", 
 							usuario.getId(), novoEstadoUsuario.ordinal()));
 				}
 			});
@@ -105,5 +114,9 @@ public class JSBridge {
     
     public void matarUsuario(long usuarioId) {
     	usuarios.stream().filter(it -> it.getId() == usuarioId).forEach(it -> it.interrupt());
+    }
+    
+    public void matarPombo() {
+    	pomboCorreio.interrupt();
     }
 }
