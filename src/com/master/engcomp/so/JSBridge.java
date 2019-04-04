@@ -106,12 +106,4 @@ public class JSBridge {
     public void matarUsuario(long usuarioId) {
     	usuarios.stream().filter(it -> it.getId() == usuarioId).forEach(it -> it.interrupt());
     }
-    
-//  
-//    public boolean checkSolution(String solve) {
-//        if (solve.equalsIgnoreCase("god")) {
-//            webEngine.executeScript("document.getElementById(\"out\").classList.add(\"enabled\");");
-//            return true;
-//        } else return false;
-//    }
 }

@@ -6,6 +6,7 @@ import java.util.concurrent.Semaphore;
 public class CaixaMensagens {
 	private Semaphore mensagens;
 	private Semaphore capacidade;
+	
 	private List<CaixaMensagensListener> listeners;
 	
 	public CaixaMensagens(int maximoMensagens) {
