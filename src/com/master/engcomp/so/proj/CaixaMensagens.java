@@ -1,5 +1,6 @@
 package com.master.engcomp.so.proj;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -7,7 +8,7 @@ public class CaixaMensagens {
 	private Semaphore mensagens;
 	private Semaphore capacidade;
 	
-	private List<CaixaMensagensListener> listeners;
+	private List<CaixaMensagensListener> listeners = new ArrayList<>();
 	
 	public CaixaMensagens(int maximoMensagens) {
 		mensagens = new Semaphore(0);

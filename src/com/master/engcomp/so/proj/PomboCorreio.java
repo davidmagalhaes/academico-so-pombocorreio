@@ -1,5 +1,6 @@
 package com.master.engcomp.so.proj;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PomboCorreio extends Thread {
@@ -9,7 +10,7 @@ public class PomboCorreio extends Thread {
 	private int tempoDescarga;
 	
 	private EstadoPomboCorreio estadoAtual;
-	private List<PomboCorreioListener> listeners;
+	private List<PomboCorreioListener> listeners = new ArrayList<>();;
 	
 	private CaixaMensagens caixaMensagens;
 	

@@ -1,5 +1,6 @@
 package com.master.engcomp.so;
 	
+import java.io.File;
 import java.net.URL;
 
 import javafx.application.Application;
@@ -37,7 +38,12 @@ public class Main extends Application {
 			
 			jsobj.setMember("javaobj", bridge);			
 			
-			engine.load("file:///C:/Users/Alunos/Desktop/so-project/public/index.html");
+			//System.out.println("file://" + getClass().getResource("/../..").toExternalForm().replace("file:/", "") + "index.html");
+			//engine.load("file:///C:/Users/Alunos/Desktop/so-project/public/index.html");
+			
+			
+			System.out.println("file:///" + new File(".").getAbsolutePath().replace("\\", "/") + "/index.html");
+			engine.load("file:///" + new File(".").getAbsolutePath().replace(".", "").replace("\\", "/") + "index.html");
 						
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 						

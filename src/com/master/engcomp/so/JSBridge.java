@@ -2,6 +2,8 @@ package com.master.engcomp.so;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.master.engcomp.so.proj.CaixaMensagens;
 import com.master.engcomp.so.proj.CaixaMensagensListener;
@@ -12,9 +14,13 @@ import com.master.engcomp.so.proj.PomboCorreioListener;
 import com.master.engcomp.so.proj.Usuario;
 import com.master.engcomp.so.proj.UsuarioListener;
 
+import javafx.application.Platform;
 import javafx.scene.web.WebEngine;
 
 public class JSBridge {
+	
+	Logger log = Logger.getLogger("log4j");
+	
 	private WebEngine webEngine;
 
 	private CaixaMensagens caixaMensagens;
@@ -34,10 +40,10 @@ public class JSBridge {
     	
     	pomboCorreio = new PomboCorreio();
     	
-    	pomboCorreio.setTempoCarga(tempoCarga);
-    	pomboCorreio.setTempoDescarga(tempoDescarga);
-    	pomboCorreio.setTempoVoo(tempoVoo);
-    	pomboCorreio.setNumeroMensagens(numeroMensagens);
+    	pomboCorreio.setTempoCarga(tempoCarga*1000);
+    	pomboCorreio.setTempoDescarga(tempoDescarga*1000);
+    	pomboCorreio.setTempoVoo(tempoVoo*1000);
+    	pomboCorreio.setNumeroMensagens(numeroMensagens*1000);
     	
     	if(iniciado) {
     		pomboCorreio.start();
@@ -51,7 +57,7 @@ public class JSBridge {
     public long criarUsuario(int tempoEscrita) {
     	Usuario usuario = new Usuario();
     	
-    	usuario.setTempoEscrita(tempoEscrita);
+    	usuario.setTempoEscrita(tempoEscrita*1000);
     	
     	usuarios.add(usuario);
     	
@@ -65,38 +71,50 @@ public class JSBridge {
     }
     
     public void iniciar(int maximoCaixaMensagens) {
-    	caixaMensagens = new CaixaMensagens(maximoCaixaMensagens);
+    	log("INICIANDO...");
     	
+    	caixaMensagens = new CaixaMensagens(maximoCaixaMensagens);
+    	    	
     	caixaMensagens.addCaixaMensagensListener(new CaixaMensagensListener() {
 			@Override
 			public void mensagensConsumidas(int numeroMensagens) {
-				webEngine.executeScript(String.format("updateCaixaMensagens(%d)", caixaMensagens.getNumeroMensagens()));
+				Platform.runLater(()->{
+					webEngine.executeScript(String.format("updateCaixaMensagens(%d)", caixaMensagens.getNumeroMensagens()));
+				});
 			}
 			
 			@Override
 			public void mensagemInserida() {
-				webEngine.executeScript(String.format("updateCaixaMensagens(%d)", caixaMensagens.getNumeroMensagens()));
+				Platform.runLater(()->{
+					webEngine.executeScript(String.format("updateCaixaMensagens(%d)", caixaMensagens.getNumeroMensagens()));
+				});
 			}
 		});
     	
+    	pomboCorreio.setCaixaMensagens(caixaMensagens);    	
     	pomboCorreio.addPomboCorreioListener(new PomboCorreioListener() {
 			@Override
 			public void mudancaEstado(PomboCorreio pomboCorreio, EstadoPomboCorreio novoEstadoPomboCorreio) {
-				webEngine.executeScript(String.format("mudancaEstadoPomboCorreio(%s)", 
-						novoEstadoPomboCorreio.ordinal()));
+				Platform.runLater(()->{
+					webEngine.executeScript(String.format("mudancaEstadoPomboCorreio('%s')", 
+							novoEstadoPomboCorreio.ordinal()));
+				});
 				
 				log("Pombo mudou para o estado %s", novoEstadoPomboCorreio.name());
 			}
 		});
-    	
+    	    	
     	pomboCorreio.start();
-    	
+    	    	
     	for(Usuario usuario : usuarios) {
+    		usuario.setCaixaMensagens(caixaMensagens);
     		usuario.addUsuarioListener(new UsuarioListener() {
 				@Override
 				public void mudancaEstado(Usuario usuario, EstadoUsuario novoEstadoUsuario) {
-					webEngine.executeScript(String.format("mudancaEstadoUsuario(%l, %s)", 
-							usuario.getId(), novoEstadoUsuario.name()));
+					Platform.runLater(()->{
+						webEngine.executeScript(String.format("mudancaEstadoUsuario(%d, '%s')", 
+								usuario.getId(), novoEstadoUsuario.name()));
+					});
 					
 					log("Usuário %d mudou para o estado %s", usuario.getId(), novoEstadoUsuario.name());
 				}
@@ -135,10 +153,12 @@ public class JSBridge {
     }
     
     public void jslog(String text){
-    	System.out.println(String.format("--- JS-LOG: %s", text));
+    	Platform.runLater(()->{
+    		System.out.println(String.format("--- JS-LOG: %s", text));
+    	});
     }
     
     private void log(String text, Object... args){
-    	System.out.println(String.format(text, args));
+    	log.log(Level.INFO, String.format(text, args));    	
     }
 }
