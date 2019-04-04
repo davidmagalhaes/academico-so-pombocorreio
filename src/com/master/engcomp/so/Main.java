@@ -19,10 +19,12 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Pane root = FXMLLoader.load(getClass().getResource("Main.fxml"));
-			Scene scene = new Scene(root,400,400);
+			WebView root = FXMLLoader.load(getClass().getResource("Main.fxml"));
+			
+			Scene scene = new Scene(root,1200,600);
 			
 			WebView webview = (WebView) scene.lookup("#webview");
+			
 			
 			webview.setContextMenuEnabled(true);
 			webview.getEngine().setOnError(event -> System.out.println(event.getMessage()));
@@ -35,7 +37,7 @@ public class Main extends Application {
 			
 			jsobj.setMember("javaobj", bridge);			
 			
-			engine.load("file:///C:/Users/Alunos/Desktop/index.html");
+			engine.load("file:///C:/Users/Alunos/Desktop/so-project/public/index.html");
 						
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 						

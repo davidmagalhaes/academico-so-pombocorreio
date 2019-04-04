@@ -43,6 +43,8 @@ public class JSBridge {
     		pomboCorreio.start();
     	}
     	
+    	log("Pombo criado! %d %d %d %d", numeroMensagens, tempoCarga, tempoVoo, tempoDescarga);
+    	
     	return pomboCorreio.getId();
     }
     
@@ -56,6 +58,8 @@ public class JSBridge {
     	if(iniciado) {
     		usuario.start();
     	}
+    	
+    	log("Usuário criado! %d", tempoEscrita);
     	
     	return usuario.getId();
     }
@@ -78,8 +82,10 @@ public class JSBridge {
     	pomboCorreio.addPomboCorreioListener(new PomboCorreioListener() {
 			@Override
 			public void mudancaEstado(PomboCorreio pomboCorreio, EstadoPomboCorreio novoEstadoPomboCorreio) {
-				webEngine.executeScript(String.format("mudancaEstadoPomboCorreio(%d)", 
+				webEngine.executeScript(String.format("mudancaEstadoPomboCorreio(%s)", 
 						novoEstadoPomboCorreio.ordinal()));
+				
+				log("Pombo mudou para o estado %s", novoEstadoPomboCorreio.name());
 			}
 		});
     	
@@ -89,13 +95,17 @@ public class JSBridge {
     		usuario.addUsuarioListener(new UsuarioListener() {
 				@Override
 				public void mudancaEstado(Usuario usuario, EstadoUsuario novoEstadoUsuario) {
-					webEngine.executeScript(String.format("mudancaEstadoUsuario(%l, %d)", 
-							usuario.getId(), novoEstadoUsuario.ordinal()));
+					webEngine.executeScript(String.format("mudancaEstadoUsuario(%l, %s)", 
+							usuario.getId(), novoEstadoUsuario.name()));
+					
+					log("Usuário %d mudou para o estado %s", usuario.getId(), novoEstadoUsuario.name());
 				}
 			});
     		
     		usuario.start();
     	}
+    	
+    	log("INICIADO!");
     	
     	iniciado = true;
     }
@@ -109,14 +119,26 @@ public class JSBridge {
     	
     	usuarios.clear();
     	
+    	log("PARADO!");
+    	
     	iniciado = false;
     }
     
     public void matarUsuario(long usuarioId) {
     	usuarios.stream().filter(it -> it.getId() == usuarioId).forEach(it -> it.interrupt());
+    	log("Usuário %d foi morto!", usuarioId);
     }
     
     public void matarPombo() {
     	pomboCorreio.interrupt();
+    	log("Pombo foi morto!");
+    }
+    
+    public void jslog(String text){
+    	System.out.println(String.format("--- JS-LOG: %s", text));
+    }
+    
+    private void log(String text, Object... args){
+    	System.out.println(String.format(text, args));
     }
 }
