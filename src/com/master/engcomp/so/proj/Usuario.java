@@ -21,7 +21,7 @@ public class Usuario extends Thread {
 		try {
 			while(true) {
 				mudarEstado(EstadoUsuario.ESCREVENDO);
-				sleep(tempoEscrita);
+				busyWaitLoop(tempoEscrita);
 				
 				mudarEstado(EstadoUsuario.BLOQUEADO);
 				caixaMensagens.inserirMensagem();
@@ -41,6 +41,16 @@ public class Usuario extends Thread {
 		}
 		
 		estadoAtual = novoEstado;
+	}
+	
+	private void busyWaitLoop(int millis) throws InterruptedException {
+		long current = System.currentTimeMillis();
+		
+		while(current + millis > System.currentTimeMillis()) {
+			if(isInterrupted()) {
+				throw new InterruptedException();
+			}
+		}
 	}
 	
 	public void addUsuarioListener(UsuarioListener listener) {

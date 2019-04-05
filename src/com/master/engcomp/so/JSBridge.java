@@ -58,7 +58,7 @@ public class JSBridge {
     	pomboCorreio.setTempoVoo(tempoVoo*1000);
     	
     	if(iniciado) {
-    		pomboCorreio.start();
+    		startPomboCorreio(pomboCorreio);
     	}
     	
     	log("Pombo criado! %d %d %d %d", numeroMensagens, tempoCarga, tempoVoo, tempoDescarga);
@@ -83,7 +83,7 @@ public class JSBridge {
     	usuarios.add(usuario);
     	
     	if(iniciado) {
-    		usuario.start();
+    		startUsuario(usuario);
     	}
     	
     	log("Usuario criado! %d", tempoEscrita);
@@ -115,36 +115,10 @@ public class JSBridge {
 			}
 		});
     	
-    	pomboCorreio.setCaixaMensagens(caixaMensagens);    	
-    	pomboCorreio.addPomboCorreioListener(new PomboCorreioListener() {
-			@Override
-			public void mudancaEstado(PomboCorreio pomboCorreio, EstadoPomboCorreio novoEstadoPomboCorreio) {
-				Platform.runLater(()->{
-					webEngine.executeScript(String.format("mudancaEstadoPomboCorreio('%s')", 
-							novoEstadoPomboCorreio.name()));
-				});
-				
-				log("Pombo mudou para o estado %s", novoEstadoPomboCorreio.name());
-			}
-		});
-    	    	
-    	pomboCorreio.start();
+    	startPomboCorreio(pomboCorreio);
     	    	
     	for(Usuario usuario : usuarios) {
-    		usuario.setCaixaMensagens(caixaMensagens);
-    		usuario.addUsuarioListener(new UsuarioListener() {
-				@Override
-				public void mudancaEstado(Usuario usuario, EstadoUsuario novoEstadoUsuario) {
-					Platform.runLater(()->{
-						webEngine.executeScript(String.format("mudancaEstadoUsuario(%d, '%s')", 
-								usuario.getId(), novoEstadoUsuario.name()));
-					});
-					
-					log("Usuario %d mudou para o estado %s", usuario.getId(), novoEstadoUsuario.name());
-				}
-			});
-    		
-    		usuario.start();
+    		startUsuario(usuario);
     	}
     	
     	log("INICIADO!");
@@ -191,6 +165,40 @@ public class JSBridge {
     
     public void jslog(String text){
     	log.log(Level.INFO, String.format(text));  
+    }
+    
+    private void startUsuario(Usuario usuario) {
+    	usuario.setCaixaMensagens(caixaMensagens);
+		usuario.addUsuarioListener(new UsuarioListener() {
+			@Override
+			public void mudancaEstado(Usuario usuario, EstadoUsuario novoEstadoUsuario) {
+				Platform.runLater(()->{
+					webEngine.executeScript(String.format("mudancaEstadoUsuario(%d, '%s')", 
+							usuario.getId(), novoEstadoUsuario.name()));
+				});
+				
+				log("Usuario %d mudou para o estado %s", usuario.getId(), novoEstadoUsuario.name());
+			}
+		});
+		
+		usuario.start();
+    }
+    
+    private void startPomboCorreio(PomboCorreio pomboCorreio) {
+    	pomboCorreio.setCaixaMensagens(caixaMensagens);    	
+    	pomboCorreio.addPomboCorreioListener(new PomboCorreioListener() {
+			@Override
+			public void mudancaEstado(PomboCorreio pomboCorreio, EstadoPomboCorreio novoEstadoPomboCorreio) {
+				Platform.runLater(()->{
+					webEngine.executeScript(String.format("mudancaEstadoPomboCorreio('%s')", 
+							novoEstadoPomboCorreio.name()));
+				});
+				
+				log("Pombo mudou para o estado %s", novoEstadoPomboCorreio.name());
+			}
+		});
+    	    	
+    	pomboCorreio.start();
     }
     
     private void log(String text, Object... args){

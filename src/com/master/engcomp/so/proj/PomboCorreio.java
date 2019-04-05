@@ -30,16 +30,16 @@ public class PomboCorreio extends Thread {
 				caixaMensagens.pegarMensagens(numeroMensagens);
 				
 				mudarEstado(EstadoPomboCorreio.CARREGANDO);
-				sleep(tempoCarga);
+				busyWaitLoop(tempoCarga);
 				
 				mudarEstado(EstadoPomboCorreio.VOANDO_IDA);
-				sleep(tempoVoo);
+				busyWaitLoop(tempoVoo);
 				
 				mudarEstado(EstadoPomboCorreio.DESCARREGANDO);
-				sleep(tempoDescarga);
+				busyWaitLoop(tempoDescarga);
 				
 				mudarEstado(EstadoPomboCorreio.VOANDO_VOLTA);
-				sleep(tempoVoo);
+				busyWaitLoop(tempoVoo);
 			}
 		}
 		catch (InterruptedException ie) {
@@ -56,6 +56,16 @@ public class PomboCorreio extends Thread {
 		}
 		
 		estadoAtual = novoEstado;
+	}
+	
+	private void busyWaitLoop(int millis) throws InterruptedException {
+		long current = System.currentTimeMillis();
+		
+		while(current + millis > System.currentTimeMillis()) {
+			if(isInterrupted()) {
+				throw new InterruptedException();
+			}
+		}
 	}
 	
 	public void addPomboCorreioListener(PomboCorreioListener listener) {
