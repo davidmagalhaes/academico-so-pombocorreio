@@ -3,6 +3,12 @@ package com.master.engcomp.so.proj;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * Thread que representa o pombo correio que entrega as mensagens da caixa de mensagens.
+ * é uma máquina de estados que define os estados do pombo.
+ *
+ */
 public class PomboCorreio extends Thread {
 	private int numeroMensagens;
 	private int tempoCarga;
@@ -18,6 +24,8 @@ public class PomboCorreio extends Thread {
 	public void run() {
 		try {
 			while(true) {
+				//O Pombo tenta pegar as mensagens da caixa de mensagens.
+				//Se não houver mensagens suficientes, ele dorme.
 				mudarEstado(EstadoPomboCorreio.BLOQUEADO);
 				caixaMensagens.pegarMensagens(numeroMensagens);
 				

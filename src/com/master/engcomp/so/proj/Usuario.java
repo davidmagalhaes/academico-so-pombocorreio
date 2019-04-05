@@ -3,6 +3,11 @@ package com.master.engcomp.so.proj;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Thread que representa um usuário que escreve na caixa de mensagens.
+ * É uma máquina de estados que define o estado do usuário
+ * 
+ */
 public class Usuario extends Thread {
 	private int tempoEscrita;
 

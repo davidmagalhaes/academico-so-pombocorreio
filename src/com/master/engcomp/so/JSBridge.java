@@ -32,18 +32,30 @@ public class JSBridge {
     JSBridge(WebEngine webEngine) {
         this.webEngine = webEngine;
     }
-
+    
+    /** 
+     * Método que cria um pombo. Se a simulação já estiver executando,
+     * o pombo é executado logo após sua criação. Somente um pombo pode estar
+     * em execução por vez, por isso, ao criar um novo pombo, o pombo anterior
+     * se houver, será morto.
+     * 
+     * @param numeroMensagens numero de mensagens que o pombo correio leva a cada carga
+     * @param tempoCarga tempo, em segundos, que o pombo correio leva para carregar mensagens consigo
+     * @param tempoVoo tempo, em segundos, de voo entre a caixa de mensagens e o destino
+     * @param tempoDescarga tempo, em segundos, que o pombo correio leva para descarregar as mensagens no destino.
+     * 
+     * */
     public long criarPombo(int numeroMensagens, int tempoCarga, int tempoVoo, int tempoDescarga) {
-    	if(pomboCorreio != null && pomboCorreio.isAlive()) {
+    	if(pomboCorreio != null) {
     		pomboCorreio.interrupt();
     	}
     	
     	pomboCorreio = new PomboCorreio();
     	
+    	pomboCorreio.setNumeroMensagens(numeroMensagens);
     	pomboCorreio.setTempoCarga(tempoCarga*1000);
     	pomboCorreio.setTempoDescarga(tempoDescarga*1000);
     	pomboCorreio.setTempoVoo(tempoVoo*1000);
-    	pomboCorreio.setNumeroMensagens(numeroMensagens*1000);
     	
     	if(iniciado) {
     		pomboCorreio.start();
@@ -54,6 +66,15 @@ public class JSBridge {
     	return pomboCorreio.getId();
     }
     
+    /** 
+     * Método que cria um usuário. Se a simulação já estiver em execução,
+     * o usuário será executado logo após sua criação.
+     * 
+     * @param tempoEscrita tempo, em segundos, que um usuário leva para
+     * 	escrever uma nova mensagem
+     * 
+     * @return id do usuário recém criado.
+     * */
     public long criarUsuario(int tempoEscrita) {
     	Usuario usuario = new Usuario();
     	
@@ -65,11 +86,14 @@ public class JSBridge {
     		usuario.start();
     	}
     	
-    	log("Usu�rio criado! %d", tempoEscrita);
+    	log("Usuario criado! %d", tempoEscrita);
     	
     	return usuario.getId();
     }
     
+    /** 
+     * Inicia a simulação
+     * */
     public void iniciar(int maximoCaixaMensagens) {
     	log("INICIANDO...");
     	
@@ -97,7 +121,7 @@ public class JSBridge {
 			public void mudancaEstado(PomboCorreio pomboCorreio, EstadoPomboCorreio novoEstadoPomboCorreio) {
 				Platform.runLater(()->{
 					webEngine.executeScript(String.format("mudancaEstadoPomboCorreio('%s')", 
-							novoEstadoPomboCorreio.ordinal()));
+							novoEstadoPomboCorreio.name()));
 				});
 				
 				log("Pombo mudou para o estado %s", novoEstadoPomboCorreio.name());
@@ -116,7 +140,7 @@ public class JSBridge {
 								usuario.getId(), novoEstadoUsuario.name()));
 					});
 					
-					log("Usu�rio %d mudou para o estado %s", usuario.getId(), novoEstadoUsuario.name());
+					log("Usuario %d mudou para o estado %s", usuario.getId(), novoEstadoUsuario.name());
 				}
 			});
     		
@@ -128,8 +152,13 @@ public class JSBridge {
     	iniciado = true;
     }
     
+    /** 
+     * Para a simulação e reseta os valores para os valores iniciais, 
+     * para que outra simulação possa ser iniciada em seguida.
+     * */
     public void parar() {
     	pomboCorreio.interrupt();
+    	pomboCorreio = null;
     	
     	for(Usuario usuario : usuarios) {
     		usuario.interrupt();
@@ -142,20 +171,26 @@ public class JSBridge {
     	iniciado = false;
     }
     
+    /**
+     * Mata um usuário.
+     * 
+     * @param usuarioId Id do usuário que será morto
+     */
     public void matarUsuario(long usuarioId) {
     	usuarios.stream().filter(it -> it.getId() == usuarioId).forEach(it -> it.interrupt());
-    	log("Usu�rio %d foi morto!", usuarioId);
+    	log("Usuario %d foi morto!", usuarioId);
     }
     
+    /** 
+     * Mata o pombo.
+     * */
     public void matarPombo() {
     	pomboCorreio.interrupt();
     	log("Pombo foi morto!");
     }
     
     public void jslog(String text){
-    	Platform.runLater(()->{
-    		System.out.println(String.format("--- JS-LOG: %s", text));
-    	});
+    	log.log(Level.INFO, String.format(text));  
     }
     
     private void log(String text, Object... args){
